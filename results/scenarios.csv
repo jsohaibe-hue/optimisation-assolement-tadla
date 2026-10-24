@@ -1,0 +1,5 @@
+scenario,marge_brute_mad,ha_betterave,ha_ble_tendre,ha_luzerne,ha_mais_ensilage,valeur_eau_mad_m3,valeur_terre_mad_ha
+base,98756,0.0,2.0,1.1,6.9,0.104,9666
+secheresse_3000_m3_ha,60011,0.0,2.0,0.0,4.32,2.097,0
+ble_270_dh_q,97716,0.0,2.0,1.1,6.9,0.104,9666
+sans_prime_betterave,98756,0.0,2.0,1.1,6.9,0.104,9666
