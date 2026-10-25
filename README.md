@@ -48,8 +48,9 @@ ne sont pas actualisées.
 pip install -r requirements.txt
 python src/modele.py
 ```
-Le script affiche un rapport de qualité des données, écrit `results/scenarios.csv` et trace
-`results/assolement.png`.
+Le script affiche un rapport de qualité des données, écrit `results/scenarios.csv` et
+`results/sensibilite_betterave.csv`, et trace `results/assolement.png` et
+`results/sensibilite_betterave.png`.
 
 ## Résultats
 > **Résultats préliminaires (v0.1).** Ils reposent sur des paramètres encore provisoires
@@ -118,9 +119,37 @@ comme un résultat.
 - La main-d'œuvre n'est pas modélisée, alors que la betterave en demande beaucoup.
 - Le modèle est statique, sans risque ni variabilité des prix.
 
-**Prochaines étapes :** remplacer les paramètres `hypothese` et `ancien`, ajouter une analyse
-de sensibilité (grille prix de la betterave × eau disponible), intégrer la main-d'œuvre et
-comparer la valeur de l'eau au tarif d'irrigation.
+**Prochaines étapes :** remplacer les paramètres `hypothese` et `ancien`, intégrer la
+main-d'œuvre et comparer la valeur de l'eau au tarif d'irrigation.
+
+## Analyse de sensibilité : prix de la betterave et eau disponible
+
+Comme le prix de la betterave est une hypothèse, j'ai testé 11 prix (400 à 650 MAD/t, hors
+prime de 80 MAD/t) et 6 niveaux d'eau (2 000 à 7 000 m³/ha). Le modèle est relancé pour chaque
+combinaison (plafond de 3 ha de betterave).
+
+![Surface de betterave selon le prix et l'eau](results/sensibilite_betterave.png)
+
+- **La décision se joue sur un intervalle étroit de prix.** La betterave n'entre jamais dans
+  l'assolement à 450 MAD/t ou moins, et y entre à 475 MAD/t dès 5 000 m³/ha (3 ha à
+  6 000 m³/ha). Pour des dotations de 3 000 à 4 000 m³/ha, le seuil se situe entre 475 et
+  500 MAD/t. Le seuil est donc d'environ 450 à 500 MAD/t selon l'eau, soit 530 à 580 MAD/t prime
+  incluse.
+- **L'hypothèse actuelle est juste sous le seuil.** À 450 MAD/t, la betterave est absente ;
+  à 475 MAD/t (+ 5,6 %), elle occupe 3 ha et la marge passe de 98 756 à 102 617 MAD (+ 3,9 %).
+  Une variation de 25 MAD/t équivaut, par hectare, à environ 1 470 MAD de charges (7 %) : les
+  charges non vérifiées jouent donc autant que le prix.
+- **Quand l'eau devient rare, la betterave est plus compétitive que la luzerne.** À 3 000 m³/ha et
+  500 MAD/t, elle occupe 3 ha et la marge est de 61 399 MAD, contre 60 011 sans elle (+ 2,3 %).
+  À 2 000 m³/ha, l'eau limite sa surface à 1,8 ha.
+- **L'effet de l'eau sur la marge est robuste.** Quel que soit le prix de la betterave, passer de
+  7 000 à 3 000 m³/ha réduit fortement la marge (− 40 % à 450 MAD/t). Au-delà de 5 000 m³/ha,
+  l'eau pèse peu : la marge n'augmente que de 2 % entre 5 000 et 7 000 m³/ha.
+
+**Conclusion de l'analyse :** l'absence de betterave dans le scénario de base n'est pas robuste,
+car elle dépend d'un prix et de charges à vérifier. En revanche, la forte sensibilité de la marge
+à l'eau disponible en dessous de 5 000 m³/ha l'est. La donnée à obtenir en priorité est le prix
+payé à l'agriculteur et les charges de la betterave.
 
 ## Limites
 - Modèle statique, sans risque ni variabilité des prix ; linéarité des rendements et des charges.

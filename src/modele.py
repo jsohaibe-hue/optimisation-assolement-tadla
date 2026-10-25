@@ -11,6 +11,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import pulp
 
@@ -105,6 +106,47 @@ def tracer(resultats):
     plt.savefig(RACINE / "results" / "assolement.png", dpi=150)
 
 
+PRIX_BETTERAVE = list(range(400, 651, 25))  # MAD/t, hors prime de l'Etat
+EAU_M3_HA = [2000, 3000, 4000, 5000, 6000, 7000]
+
+
+def sensibilite():
+    """Surface optimale de betterave selon son prix et l'eau disponible par hectare."""
+    cultures, ressources, _ = charger_donnees()
+    lignes = []
+    for prix in PRIX_BETTERAVE:
+        for eau_ha in EAU_M3_HA:
+            cult = cultures.copy()
+            cult.loc["betterave", "prix_mad_t"] = prix
+            res = dict(ressources, eau=eau_ha * ressources["surface"])
+            surfaces, marge, _ = resoudre(cult, res)
+            lignes.append({
+                "prix_betterave_mad_t": prix,
+                "eau_m3_ha": eau_ha,
+                "ha_betterave": round(surfaces["betterave"], 2),
+                "marge_brute_mad": round(marge),
+            })
+    return pd.DataFrame(lignes)
+
+
+def tracer_sensibilite(sens):
+    grille = sens.pivot(index="prix_betterave_mad_t", columns="eau_m3_ha", values="ha_betterave")
+    fig, ax = plt.subplots(figsize=(7, 6))
+    image = ax.imshow(grille.values, origin="lower", aspect="auto", cmap="Greens")
+    ax.set_xticks(range(len(grille.columns)), grille.columns)
+    ax.set_yticks(range(len(grille.index)), grille.index)
+    for i in range(grille.shape[0]):
+        for j in range(grille.shape[1]):
+            ax.text(j, i, f"{grille.values[i, j]:.1f}", ha="center", va="center", fontsize=8,
+                    color="white" if grille.values[i, j] >= 2 else "black")
+    ax.set_xlabel("Eau disponible (m3/ha)")
+    ax.set_ylabel("Prix de la betterave (MAD/t, hors prime de 80 MAD/t)")
+    ax.set_title("Surface optimale de betterave (ha, plafond 3 ha)")
+    fig.colorbar(image, label="ha")
+    fig.tight_layout()
+    fig.savefig(RACINE / "results" / "sensibilite_betterave.png", dpi=150)
+
+
 if __name__ == "__main__":
     _, _, long = charger_donnees()
     resume, a_valider = rapport_qualite(long)
@@ -113,5 +155,8 @@ if __name__ == "__main__":
     resultats = scenarios()
     resultats.to_csv(RACINE / "results" / "scenarios.csv", index=False)
     tracer(resultats)
+    sens = sensibilite()
+    sens.to_csv(RACINE / "results" / "sensibilite_betterave.csv", index=False)
+    tracer_sensibilite(sens)
     pd.set_option("display.width", 220)
     print(resultats.T.to_string(header=False))
